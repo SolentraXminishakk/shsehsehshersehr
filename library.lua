@@ -262,6 +262,7 @@ MakeDraggable(CommandsListTopbar)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if not gameProcessed and input.KeyCode == Enum.KeyCode.Semicolon then
 		InputBox:CaptureFocus()
+		InputBox.Text = ""
 	end
 end)
 
@@ -414,30 +415,6 @@ InputBox.FocusLost:Connect(function(enterPressed)
 		InputBox.Text = ""
 	end
 end)
-
--- Example commands (you can remove these)
-MM2Admin.CreateCMD("walkspeed", "Sets your walkspeed", "number", function(ws)
-	local player = game.Players.LocalPlayer
-	if player.Character then
-		local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-		if humanoid then
-			humanoid.WalkSpeed = tonumber(ws) or 16
-			MM2Admin.CreateNotification("Success", "Walkspeed set to " .. (tonumber(ws) or 16), 3)
-		end
-	end
-end)
-
-MM2Admin.CreateCMD("jumppower", "Sets your jump power", "number", function(jp)
-	local player = game.Players.LocalPlayer
-	if player.Character then
-		local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-		if humanoid then
-			humanoid.JumpPower = tonumber(jp) or 50
-			MM2Admin.CreateNotification("Success", "Jump power set to " .. (tonumber(jp) or 50), 3)
-		end
-	end
-end)
-
 -- Start animations
 AnimateTitle()
 
