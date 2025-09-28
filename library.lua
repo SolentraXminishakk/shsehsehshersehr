@@ -260,7 +260,7 @@ MakeDraggable(CommandsListTopbar)
 
 -- Command input functionality
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if not gameProcessed and input.KeyCode == Enum.KeyCode.Semicolon then
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.Semicolon or input.KeyCode == Enum.KeyCode.Period then
 		InputBox:CaptureFocus()
 		InputBox.Text = ""
 	end
