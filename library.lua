@@ -37,7 +37,7 @@ CommandEntry.BackgroundColor3 = Color3.new(1, 1, 1)
 CommandEntry.BackgroundTransparency = 0.67
 CommandEntry.BorderColor3 = Color3.new(0, 0, 0)
 CommandEntry.BorderSizePixel = 2
-CommandEntry.Position = UDim2.new(0.834343195, 0, 0.00672043022, 0)
+CommandEntry.Position = UDim2.new(0.6, 0, 0.00672043022, 0)
 CommandEntry.Size = UDim2.new(0, 267, 0, 38)
 
 InputBox.Name = "InputBox"
@@ -207,7 +207,6 @@ UIAspectRatioConstraint.AspectRatio = 1.8485664129257202
 MM2Admin.Commands = {}
 MM2Admin.CommandButtons = {}
 
--- Make CommandsList draggable
 local function MakeDraggable(gui)
 	local dragging = false
 	local dragInput
