@@ -37,7 +37,7 @@ CommandEntry.BackgroundColor3 = Color3.new(1, 1, 1)
 CommandEntry.BackgroundTransparency = 0.67
 CommandEntry.BorderColor3 = Color3.new(0, 0, 0)
 CommandEntry.BorderSizePixel = 2
-CommandEntry.Position = UDim2.new(0.734343195, 0, 0.00672043022, 0)
+CommandEntry.Position = UDim2.new(0.733243195, 0, 0.00672043022, 0)
 CommandEntry.Size = UDim2.new(0, 267, 0, 38)
 
 InputBox.Name = "InputBox"
@@ -357,32 +357,6 @@ function MM2Admin.CreateCMD(Name, Description, Arguments, Callback)
 			InputBox:CaptureFocus()
 		end
 	end)
-	
-	-- Tooltip for description
-	if Description then
-		local Tooltip = Instance.new("TextLabel")
-		Tooltip.Name = "Tooltip"
-		Tooltip.Parent = CommandButton
-		Tooltip.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-		Tooltip.BackgroundTransparency = 0.1
-		Tooltip.BorderSizePixel = 0
-		Tooltip.Position = UDim2.new(0, 0, -1.5, 0)
-		Tooltip.Size = UDim2.new(0, 200, 0, 40)
-		Tooltip.Visible = false
-		Tooltip.Text = Description
-		Tooltip.TextColor3 = Color3.new(1, 1, 1)
-		Tooltip.TextSize = 12
-		Tooltip.TextWrapped = true
-		Tooltip.ZIndex = 10
-		
-		CommandButton.MouseEnter:Connect(function()
-			Tooltip.Visible = true
-		end)
-		
-		CommandButton.MouseLeave:Connect(function()
-			Tooltip.Visible = false
-		end)
-	end
 	
 	return CommandButton
 end
