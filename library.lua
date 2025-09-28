@@ -10,8 +10,8 @@ local Script = Instance.new("ScreenGui")
 Script.Name = "MM2Admin"
 Script.Parent = game:GetService("CoreGui")
 Script.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Script.IgnoreGuiInset = true
 
--- Create the base UI elements (your existing code)
 local CommandEntry = Instance.new("Frame")
 local InputBox = Instance.new("TextBox")
 local CommandsListTopbar = Instance.new("Frame")
