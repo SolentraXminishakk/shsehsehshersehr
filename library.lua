@@ -1,133 +1,192 @@
---// Admin Command Library
-local TweenService = game:GetService("TweenService")
+--[=[
+    MM2 Admin UI Library
+    Source: Paradox/G2L conversion
+    Features:
+    - Init() -> creates UI
+    - AddCMD(Name, Text, Callback) -> adds commands
+    - Notifications on the left
+    - Command bar + chat listener
+]=]
+
+local AdminUI = {}
+AdminUI.__index = AdminUI
+
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
+local PlayerGui = LP:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
--- Global command table
+-- global commands table
 getgenv().Commands = getgenv().Commands or {}
 
---// ScreenGui Setup
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "AdminUI"
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = LP:WaitForChild("PlayerGui")
+-- Notification system
+function AdminUI:Notify(Title, Text, Duration)
+    local Frame = Instance.new("Frame")
+    Frame.Name = "NotificationTopbar"
+    Frame.Size = UDim2.new(0, 250, 0, 100)
+    Frame.Position = UDim2.new(0, 10, 0, 50)
+    Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    Frame.BackgroundTransparency = 0.2
+    Frame.Parent = self.UI
 
--- Command List UI
-local CmdTopbar = Instance.new("Frame", ScreenGui)
-CmdTopbar.Name = "CommandsListTopbar"
-CmdTopbar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-CmdTopbar.Size = UDim2.new(0, 300, 0, 40)
-CmdTopbar.Position = UDim2.new(0.7, 0, 0.3, 0)
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Text = Title
+    TitleLabel.Size = UDim2.new(1,0,0,25)
+    TitleLabel.Position = UDim2.new(0,0,0,0)
+    TitleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Font = Enum.Font.SourceSansBold
+    TitleLabel.TextSize = 20
+    TitleLabel.Parent = Frame
 
-local Title = Instance.new("TextLabel", CmdTopbar)
-Title.Size = UDim2.new(1, 0, 1, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "Commands"
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 20
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Text = Text
+    TextLabel.Size = UDim2.new(1,0,1,-25)
+    TextLabel.Position = UDim2.new(0,0,0,25)
+    TextLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    TextLabel.TextWrapped = true
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Font = Enum.Font.SourceSans
+    TextLabel.TextSize = 16
+    TextLabel.Parent = Frame
 
-local CmdList = Instance.new("Frame", CmdTopbar)
-CmdList.Name = "CommandsList"
-CmdList.BackgroundTransparency = 1
-CmdList.Size = UDim2.new(1, 0, 0, 250)
-CmdList.Position = UDim2.new(0, 0, 1, 0)
-
-local UIListLayout = Instance.new("UIListLayout", CmdList)
-UIListLayout.Padding = UDim.new(0, 3)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- Notification UI
-local NotiFrame = Instance.new("Frame", ScreenGui)
-NotiFrame.Name = "Notification"
-NotiFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-NotiFrame.Size = UDim2.new(0, 250, 0, 100)
-NotiFrame.Position = UDim2.new(1, 0, 0.8, 0)
-NotiFrame.BorderSizePixel = 0
-NotiFrame.Visible = false
-
-local NotiTitle = Instance.new("TextLabel", NotiFrame)
-NotiTitle.Size = UDim2.new(1,0,0,25)
-NotiTitle.BackgroundTransparency = 1
-NotiTitle.Font = Enum.Font.SourceSansBold
-NotiTitle.TextSize = 18
-NotiTitle.TextColor3 = Color3.fromRGB(255,255,255)
-
-local NotiText = Instance.new("TextLabel", NotiFrame)
-NotiText.Size = UDim2.new(1,-10,1,-30)
-NotiText.Position = UDim2.new(0,5,0,30)
-NotiText.BackgroundTransparency = 1
-NotiText.TextWrapped = true
-NotiText.Font = Enum.Font.SourceSans
-NotiText.TextSize = 16
-NotiText.TextColor3 = Color3.fromRGB(200,200,200)
-
---// Library
-local Library = {}
-Library.Prefix = ";" -- default prefix for chat commands
-
--- Create Command
-function Library.CreateCMD(Name, Description, Callback)
-	-- Save to global command registry
-	getgenv().Commands[Name:lower()] = {
-		Description = Description,
-		Callback = Callback
-	}
-
-	-- Add to GUI list
-	local Btn = Instance.new("TextButton", CmdList)
-	Btn.Size = UDim2.new(1,-10,0,25)
-	Btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
-	Btn.BorderSizePixel = 0
-	Btn.Text = Name .. " - " .. Description
-	Btn.Font = Enum.Font.SourceSansBold
-	Btn.TextColor3 = Color3.fromRGB(255,255,255)
-	Btn.TextSize = 16
-	Btn.AutoButtonColor = true
-
-	Btn.MouseButton1Click:Connect(function()
-		if Callback then
-			Callback()
-		end
-	end)
+    task.delay(Duration or 3, function()
+        Frame:Destroy()
+    end)
 end
 
--- Notification
-function Library.CreateNotification(TitleText, BodyText, Duration)
-	NotiTitle.Text = TitleText
-	NotiText.Text = BodyText
-	NotiFrame.Visible = true
+-- initialize the UI
+function AdminUI:Init()
+    if self.UI then return end -- already init
 
-	local tweenIn = TweenService:Create(NotiFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Position = UDim2.new(0.7,0,0.8,0)
-	})
-	tweenIn:Play()
-	tweenIn.Completed:Wait()
+    local UI = Instance.new("ScreenGui")
+    UI.Name = "AdminUI"
+    UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    UI.IgnoreGuiInset = true
+    UI.Parent = PlayerGui
 
-	task.wait(Duration or 2)
+    self.UI = UI
 
-	local tweenOut = TweenService:Create(NotiFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-		Position = UDim2.new(1,0,0.8,0)
-	})
-	tweenOut:Play()
-	tweenOut.Completed:Wait()
-	NotiFrame.Visible = false
+    -- main frame
+    local Main = Instance.new("Frame")
+    Main.Size = UDim2.new(0, 300, 0, 400)
+    Main.Position = UDim2.new(0.7,0,0.2,0)
+    Main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    Main.BorderSizePixel = 0
+    Main.Parent = UI
+    self.Main = Main
+
+    -- command list
+    local ListFrame = Instance.new("ScrollingFrame")
+    ListFrame.Size = UDim2.new(1,0,1,-40)
+    ListFrame.Position = UDim2.new(0,0,0,40)
+    ListFrame.BackgroundTransparency = 1
+    ListFrame.ScrollBarThickness = 6
+    ListFrame.Parent = Main
+    self.List = ListFrame
+
+    local UIList = Instance.new("UIListLayout")
+    UIList.Parent = ListFrame
+    UIList.SortOrder = Enum.SortOrder.LayoutOrder
+    UIList.Padding = UDim.new(0,3)
+
+    -- command bar
+    local CommandBox = Instance.new("TextBox")
+    CommandBox.Size = UDim2.new(1,0,0,30)
+    CommandBox.Position = UDim2.new(0,0,0,0)
+    CommandBox.PlaceholderText = "Type command here..."
+    CommandBox.Text = ""
+    CommandBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    CommandBox.TextColor3 = Color3.fromRGB(255,255,255)
+    CommandBox.BorderSizePixel = 0
+    CommandBox.Font = Enum.Font.SourceSans
+    CommandBox.TextSize = 18
+    CommandBox.Parent = Main
+    self.CommandBox = CommandBox
+
+    -- draggable
+    local dragging = false
+    local dragStart, startPos
+    local function Lerp(a,b,m) return a + (b-a)*m end
+
+    Main.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = Main.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    Main.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    RunService.Heartbeat:Connect(function(dt)
+        if dragging and dragInput then
+            local delta = dragInput.Position - dragStart
+            Main.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    -- semicolon listener
+    UserInputService.InputBegan:Connect(function(input, gpe)
+        if not gpe and input.KeyCode == Enum.KeyCode.Semicolon then
+            CommandBox:CaptureFocus()
+            CommandBox.Text = ""
+        end
+    end)
+
+    CommandBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local text = CommandBox.Text
+            local args = text:split(" ")
+            local cmd = table.remove(args,1):lower()
+            if getgenv().Commands[cmd] then
+                getgenv().Commands[cmd](args)
+            else
+                self:Notify("Error","Command not found: "..cmd,3)
+            end
+            CommandBox.Text = ""
+        end
+    end)
 end
 
--- Chat Listener
-LP.Chatted:Connect(function(msg)
-	if msg:sub(1,1) == Library.Prefix then
-		local split = msg:sub(2):split(" ")
-		local cmdName = split[1]:lower()
-		table.remove(split,1) -- remove command name from args
-		local args = split
+-- add a command
+function AdminUI:AddCMD(Name, Text, Callback)
+    if not self.UI then self:Init() end
 
-		local cmd = getgenv().Commands[cmdName]
-		if cmd then
-			cmd.Callback(unpack(args))
-		end
-	end
-end)
+    -- store globally
+    getgenv().Commands[Name:lower()] = Callback
 
-return Library
+    -- create button
+    local Button = Instance.new("TextButton")
+    Button.Name = Name
+    Button.Text = Text
+    Button.Size = UDim2.new(1,0,0,30)
+    Button.BackgroundColor3 = Color3.fromRGB(70,70,70)
+    Button.TextColor3 = Color3.fromRGB(255,255,255)
+    Button.BorderSizePixel = 0
+    Button.Font = Enum.Font.SourceSans
+    Button.TextSize = 16
+    Button.Parent = self.List
+
+    Button.MouseButton1Click:Connect(function()
+        self.CommandBox.Text = Name
+        Callback({})
+    end)
+end
+
+return AdminUI
